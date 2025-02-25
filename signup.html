@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - Personalized Learning</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Sign Up / Login</h2>
+
+    <!-- Email/Password Signup -->
+    <input type="email" id="email" placeholder="Enter Email">
+    <input type="password" id="password" placeholder="Enter Password">
+    <button id="signup-btn">Sign Up</button>
+    <button id="login-btn">Login</button>
+
+    <hr>
+
+    <!-- Google Signup -->
+    <button id="google-login">Sign In with Google</button>
+
+    <p>Already have an account? <a href="index.html">Login</a></p>
+  </div>
+
+  <!-- Firebase Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+    from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc } 
+    from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+    // 🔹 Replace this with your Firebase Config
+    const firebaseConfig = {
+      apiKey: "YOUR-API-KEY",
+      authDomain: "YOUR-PROJECT-ID.firebaseapp.com",
+      projectId: "YOUR-PROJECT-ID",
+      storageBucket: "YOUR-PROJECT-ID.appspot.com",
+      messagingSenderId: "YOUR-SENDER-ID",
+      appId: "YOUR-APP-ID"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore();
+
+    // 🔹 Google Sign-In
+    document.getElementById("google-login").addEventListener("click", () => {
+      const provider = new GoogleAuthProvider();
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          console.log("User signed in:", result.user);
+          saveUserData(result.user);
+        })
+        .catch((error) => console.error(error.message));
+    });
+
+    // 🔹 Email Signup
+    document.getElementById("signup-btn").addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          console.log("User created:", userCredential.user);
+          saveUserData(userCredential.user);
+        })
+        .catch((error) => console.error(error.message));
+    });
+
+    // 🔹 Email Login
+    document.getElementById("login-btn").addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          console.log("User logged in:", userCredential.user);
+        })
+        .catch((error) => console.error(error.message));
+    });
+
+    // 🔹 Save User Data in Firestore
+    function saveUserData(user) {
+      addDoc(collection(db, "users"), {
+        uid: user.uid,
+        name: user.displayName || "Anonymous",
+        email: user.email,
+      }).then(() => console.log("User data saved!"));
+    }
+  </script>
+
+</body>
+</html>
